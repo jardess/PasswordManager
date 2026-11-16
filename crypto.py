@@ -23,3 +23,14 @@ def derive_key(senha_mestra, salt):
     chave = kdf.derive(senha_bytes)
 
     return chave
+
+
+##TESTE PRA VER SE TA CERTINHO
+if __name__ == "__main__": 
+    salt = generate_salt()
+    a = derive_key("minha senha", salt)
+    b = derive_key("minha senha", salt)
+    c = derive_key("outra senha completamente diferente", salt)
+    print(a == c)
+    print(a == b)
+    print(len(a))
