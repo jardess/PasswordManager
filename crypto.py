@@ -1,9 +1,6 @@
 import secrets
+from cryptography.hazmat.primitives.ciphers.aead import AESGCM
 from cryptography.hazmat.primitives.kdf.argon2 import Argon2id
-
-
-#Salt = 16 bytes
-#Chave de saida = 32 bytes
 
 def generate_salt():
     salt = secrets.token_bytes(16)
@@ -24,13 +21,25 @@ def derive_key(senha_mestra, salt):
 
     return chave
 
+def encryption(chave, texto):
+    texto_bytes = texto.encode()
+    nonce = secrets.token_bytes(12)
 
-##TESTE PRA VER SE TA CERTINHO
+    aesgcm = AESGCM(
+        key=chave
+    )
+
+    cifrado = aesgcm.encrypt(nonce, texto_bytes, None)
+
+    return nonce + cifrado
+
+
+#TESTE  
 if __name__ == "__main__": 
     salt = generate_salt()
-    a = derive_key("minha senha", salt)
-    b = derive_key("minha senha", salt)
-    c = derive_key("outra senha completamente diferente", salt)
-    print(a == c)
-    print(a == b)
-    print(len(a))
+    chave = derive_key("minha senha", salt)
+    resultado = encryption(chave, "meu segredo")
+    print(resultado)
+    print(len(resultado))
+
+    
