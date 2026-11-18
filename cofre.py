@@ -1,6 +1,8 @@
 import os
 import sqlite3
 from crypto import generate_salt, derive_key, encryption, decryption
+from cryptography.exceptions import InvalidTag
+
 
 def criar_cofre(caminho, senha_mestra):
     if os.path.exists(caminho):
@@ -22,6 +24,32 @@ def criar_cofre(caminho, senha_mestra):
     conexao.commit()
     conexao.close()
 
+def abrir_cofre(caminho, senha_mestra):
+    if not os.path.exists(caminho):
+        raise FileNotFoundError("O caminho não existe.")
+    conexao = sqlite3.connect(caminho)
+    cursor = conexao.cursor()
+    cursor.execute("SELECT salt, verificacao FROM config")
+    linha = cursor.fetchone()
+    conexao.close()
+
+    salt = linha[0]
+    verificacao = linha[1]
+
+    chave = derive_key(senha_mestra, salt)
+    try:
+        decryption(chave, verificacao)
+    except InvalidTag:
+        raise ValueError("Senha incorreta.") 
+
+    return chave
+
+
 if __name__ == "__main__":
-    criar_cofre("teste.db", "minha senha")
-    print("Cofre criado")
+    chave = abrir_cofre("teste.db", "minha senha")
+    print(len(chave))
+    try:
+        abrir_cofre("teste.db", "senha errada")
+        print("FALHOU: a senha errada foi aceita")
+    except ValueError as erro:
+        print("OK:", erro)
