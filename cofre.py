@@ -74,11 +74,32 @@ def listar_entradas(caminho, chave):
 
     return entradas
 
+def remover_entrada(caminho, id_entrada):
+    conexao = sqlite3.connect(caminho)
+    cursor = conexao.cursor()
+    cursor.execute("DELETE FROM entradas WHERE id = ?", (id_entrada,))
+    num = cursor.rowcount
+    conexao.commit()
+    conexao.close()
+
+    if num == 0:
+        raise ValueError("Entrada não encontrada.")
+
+def buscar_senha(caminho, chave, id_entrada):
+    conexao = sqlite3.connect(caminho)
+    cursor = conexao.cursor()
+    cursor.execute("SELECT senha FROM entradas WHERE id = ?", (id_entrada,))
+    linha = cursor.fetchone()
+    conexao.close()
+
+    if linha is None:
+        raise ValueError("Senha não encontrada.")
+
+    senha = decryption(chave, linha[0])
+
+    return senha
 
 
 
 
 if __name__ == "__main__":
-    chave = abrir_cofre("teste.db", "minha senha")
-    for entrada in listar_entradas("teste.db", chave):
-        print(entrada)
