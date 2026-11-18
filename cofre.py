@@ -44,12 +44,20 @@ def abrir_cofre(caminho, senha_mestra):
 
     return chave
 
+def adicionar_entrada(caminho, chave, site, usuario, senha):
+    site_cifrado = encryption(chave, site)
+    usuario_cifrado = encryption(chave, usuario)
+    senha_cifrada = encryption(chave, senha)
+
+    conexao = sqlite3.connect(caminho)
+    cursor = conexao.cursor()
+    cursor.execute("INSERT INTO entradas (site, usuario, senha) VALUES (?, ?, ?)", (site_cifrado, usuario_cifrado, senha_cifrada))
+    conexao.commit()
+    conexao.close()
+
 
 if __name__ == "__main__":
     chave = abrir_cofre("teste.db", "minha senha")
-    print(len(chave))
-    try:
-        abrir_cofre("teste.db", "senha errada")
-        print("FALHOU: a senha errada foi aceita")
-    except ValueError as erro:
-        print("OK:", erro)
+    adicionar_entrada("teste.db", chave, "gmail.com", "diego", "senha123")
+    adicionar_entrada("teste.db", chave, "github.com", "diego2", "outrasenha")
+    print("Entradas adicionadas")
