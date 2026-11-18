@@ -55,9 +55,30 @@ def adicionar_entrada(caminho, chave, site, usuario, senha):
     conexao.commit()
     conexao.close()
 
+def listar_entradas(caminho, chave):
+    conexao = sqlite3.connect(caminho)
+    cursor = conexao.cursor()
+    cursor.execute("SELECT id, site, usuario FROM entradas")
+    linhas = cursor.fetchall()
+    conexao.close()
+
+    entradas = []
+    for linha in linhas:
+        id_entrada = linha[0]
+        site_cifrado = linha[1]
+        usuario_cifrado = linha[2]
+
+        site = decryption(chave, site_cifrado)
+        usuario = decryption(chave, usuario_cifrado)
+        entradas.append((id_entrada, site, usuario))
+
+    return entradas
+
+
+
+
 
 if __name__ == "__main__":
     chave = abrir_cofre("teste.db", "minha senha")
-    adicionar_entrada("teste.db", chave, "gmail.com", "diego", "senha123")
-    adicionar_entrada("teste.db", chave, "github.com", "diego2", "outrasenha")
-    print("Entradas adicionadas")
+    for entrada in listar_entradas("teste.db", chave):
+        print(entrada)
